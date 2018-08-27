@@ -1,8 +1,6 @@
-from collections import OrderedDict, Counter
-
-from caffe.proto import caffe_pb2
-from google import protobuf
 import six
+from caffe.proto import caffe_pb2
+
 
 def param_name_dict():
     """Find out the correspondence between layer names and parameter names."""
@@ -17,6 +15,7 @@ def param_name_dict():
     param_names = [s[:-len('_param')] for s in param_names]
     param_type_names = [s[:-len('Parameter')] for s in param_type_names]
     return dict(zip(param_type_names, param_names))
+
 
 def assign_proto(proto, name, val):
     """Assign a Python object to a protobuf message, based on the Python
@@ -43,11 +42,12 @@ def assign_proto(proto, name, val):
     else:
         setattr(proto, name, val)
 
+
 class Function(object):
     """A Function specifies a layer, its parameters, and its inputs (which
     are Tops from other layers)."""
 
-    def __init__(self, type_name, layer_name, inputs,outputs, **params):
+    def __init__(self, type_name, layer_name, inputs, outputs, **params):
         self.type_name = type_name
         self.inputs = inputs
         self.outputs = outputs
@@ -101,11 +101,12 @@ class Function(object):
             else:
                 try:
                     assign_proto(getattr(layer,
-                        _param_names[self.type_name] + '_param'), k, v)
+                                         _param_names[self.type_name] + '_param'), k, v)
                 except (AttributeError, KeyError):
                     assign_proto(layer, k, v)
 
         return layer
+
 
 class Layers(object):
     """A Layers object is a pseudo-module which generates functions that specify
@@ -116,10 +117,8 @@ class Layers(object):
         def layer_fn(*args, **kwargs):
             fn = Function(name, args, kwargs)
             return fn
+
         return layer_fn
 
 
-
-
 _param_names = param_name_dict()
-

@@ -3,7 +3,7 @@ This tool converts [pytorch](https://github.com/pytorch/pytorch) model to [Caffe
 only use for inference
 
 ### Dependencies
-* caffe (with python support)
+* caffe-master (with python support)
 * pytorch 0.4 (optional if you only want to convert onnx)
 * onnx  
 

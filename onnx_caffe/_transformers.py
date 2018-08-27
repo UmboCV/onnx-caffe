@@ -3,10 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from typing import Sequence, Text, Dict, List
 import numpy as np
-
 from onnx import TensorProto
+from typing import Sequence, Text, Dict, List
 
 from ._graph import Graph, Node
 
@@ -15,6 +14,7 @@ class NodesFuser(object):
     '''
     An abstract helper for merging nodes
     '''
+
     def __init__(self,
                  num_nodes,  # type: int
                  ):
@@ -89,6 +89,7 @@ class ConvAddFuser(NodesFuser):
     '''
     Fuses Add layer into parent convolution layer.
     '''
+
     def __init__(self):  # type: () -> None
         super(ConvAddFuser, self).__init__(2)
 
@@ -126,7 +127,7 @@ class ConvAddFuser(NodesFuser):
             bias_input_name = parent.inputs[2]
             bias = parent.input_tensors[bias_input_name]
         else:
-            bias_input_name = "{}_bias".format(parent.name,)
+            bias_input_name = "{}_bias".format(parent.name, )
             parent.inputs.append(bias_input_name)
             bias = np.zeros(
                 (output_channels,), dtype=np.float32
@@ -144,6 +145,7 @@ class BNBroadcastedMulFuser(NodesFuser):
     '''
     Fuses Mul into BatchNorm
     '''
+
     def __init__(self):  # type: () -> None
         super(BNBroadcastedMulFuser, self).__init__(2)
 
@@ -186,6 +188,7 @@ class BNBroadcastedAddFuser(NodesFuser):
     '''
     Fuses Add into BatchNorm
     '''
+
     def __init__(self):  # type: () -> None
         super(BNBroadcastedAddFuser, self).__init__(2)
 
@@ -226,6 +229,7 @@ class DropoutRemover(NodesFuser):
     '''
     Removes Dropout layer
     '''
+
     def __init__(self):  # type: () -> None
         super(DropoutRemover, self).__init__(2)
 
@@ -278,7 +282,7 @@ class ReshapeInitTensorFuser(object):
             if 'shape' in node.attrs:
                 shape = tuple(node.attrs["shape"])
             else:
-                shape = node.input_tensors[shape_name] # type: ignore
+                shape = node.input_tensors[shape_name]  # type: ignore
 
             # ONNX spec supports setting dimension to '0', in which case
             # it should be taken from old dimension.
@@ -301,6 +305,7 @@ class OutputRenamer(object):
     '''
     Rename outputs according to mapping
     '''
+
     def __init__(self,
                  mapping,  # type: Dict[Text, Text]
                  ):
@@ -333,6 +338,7 @@ class PixelShuffleFuser(NodesFuser):
     Fuses 3 operators reshape->transpose->reshape which is equivalent to
     pytorch's pixel_shuffle layer
     '''
+
     def __init__(self):  # type: () -> None
         super(PixelShuffleFuser, self).__init__(3)
         self.num_added = 0
@@ -451,6 +457,7 @@ class AddModelInputsOutputs(object):
     '''
     Expose hidden states of recurrent layers as model inputs and outputs
     '''
+
     def __call__(self, graph):  # type: (Graph) -> Graph
         input_names = [str(input_[0]) for input_ in graph.inputs]
         output_names = [str(output_[0]) for output_ in graph.outputs]
@@ -463,12 +470,12 @@ class AddModelInputsOutputs(object):
                 h = node.attrs["hidden_size"]
                 for input_ in [str(input_h), str(input_c)]:
                     if input_ not in input_names:
-                        graph.inputs.append(tuple((input_, TensorProto.FLOAT, (h,))))  #type: ignore
+                        graph.inputs.append(tuple((input_, TensorProto.FLOAT, (h,))))  # type: ignore
                     if input_ not in graph.blob_to_op_type:
                         graph.blob_to_op_type[input_] = ['LSTM']
                 for output_ in [str(output_h), str(output_c)]:
                     if output_ not in output_names:
-                        graph.outputs.append(tuple((output_, TensorProto.FLOAT, (h,))))  #type: ignore
+                        graph.outputs.append(tuple((output_, TensorProto.FLOAT, (h,))))  # type: ignore
                     graph.blob_from_op_type[output_] = 'LSTM'
         return graph
 
@@ -477,6 +484,7 @@ class ConstantsToInitializers(object):
     '''
     Takes onnx Constant nodes and puts the tensor into graph initializers instead.
     '''
+
     def __call__(self, graph):  # type: (Graph) -> Graph
         output_names = [str(output_[0]) for output_ in graph.outputs]
         remaining_nodes = []
