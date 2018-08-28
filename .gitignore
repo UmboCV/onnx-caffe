@@ -1,1 +1,6 @@
-.idea
+**/__pycache__
+.cache
+.caffe_model
+.eggs
+.pytest_cache
+*.egg-info

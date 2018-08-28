@@ -6,7 +6,6 @@ import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.test import test
 
-
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
@@ -48,12 +47,15 @@ class CMakeBuild(build_ext):
         cmake_args += ['-DCPU_ONLY=1', '-DUSE_OPENCV=0', '-DBUILD_docs=0', '-DUSE_LEVELDB=0', '-DUSE_LMDB=0', '-DUSE_HDF5=1',  '-DBUILD_SHARED_LIBS=0', '-DBOOST_ROOT=/opt/conda/']
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call(['git clone -b master --depth 1 https://github.com/BVLC/caffe.git .'], cwd=self.build_temp, env=env, shell=True)
+        try:
+            subprocess.check_call(['git clone -b master --depth 1 https://github.com/BVLC/caffe.git .'], cwd=self.build_temp, env=env, shell=True)
+        except subprocess.CalledProcessError:
+            pass
         subprocess.check_call(['cmake', '.'] + cmake_args, cwd=self.build_temp, env=env, shell=False)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, shell=False)
         
         import shutil
-        shutil.copy(os.path.join(self.build_temp, 'lib', '_caffe.so'), extdir)
+        shutil.copytree(os.path.join(self.build_temp, 'python', 'caffe'), os.path.join(extdir, 'caffe'))
 
 
 def run_script(command):
@@ -65,12 +67,13 @@ def run_script(command):
         else:
             break
 
+
 class TestCommand(test):
     user_options = [('pytest-args=', 'a', "Arguments to pass to pytest")]
 
     def initialize_options(self):
         test.initialize_options(self)
-        self.pytest_args = ''
+        self.pytest_args = '-v tests'
 
     def run_tests(self):
         # clean up caches
@@ -79,13 +82,15 @@ class TestCommand(test):
         import shlex
         # import here, cause outside the eggs aren't loaded
         import pytest
+        run_script('pip install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl')
+        run_script('pip install git+https://github.com/onnx/onnx.git')
+        run_script('pip install torchvision')
         errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
 
 
 # parse_requirements() returns generator of pip.req.InstallRequirement objects
-install_reqs = []
-reqs = [str(ir.req) for ir in install_reqs]
+reqs = ['scikit-image'] #for caffe
 
 # Get the long description from the README file
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'README.md'), encoding='utf-8') as f:
