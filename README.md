@@ -4,8 +4,8 @@ only use for inference
 
 ### Dependencies
 * caffe-master (with python support)
-* pytorch 0.4 (optional if you only want to convert onnx)
-* onnx  
+* pytorch 0.4+ (optional if you only want to convert onnx)
+* onnx
 
 we recomand using protobuf 2.6.1 and install onnx from source  
 ```
@@ -14,12 +14,6 @@ cd onnx
 python setup.py install
 ```
 
-### How to use
-run test.py to make sure it has been installed correctly  
-To convert onnx model to caffe:
-```
-python convertCaffe.py ./model/MobileNetV2.onnx ./model/MobileNetV2.prototxt ./model/MobileNetV2.caffemodel
-```
 ### Current support operation
 * Conv
 * ConvTranspose
