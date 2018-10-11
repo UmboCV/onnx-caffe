@@ -130,11 +130,6 @@ def _convert_Add(node, graph, err):
     output_name = str(node.outputs[0])
     node_name = node.name
 
-    max_dim = 0
-    for name in input_name_list:
-        if graph.channel_dims[name] > max_dim:
-            max_dim = graph.channel_dims[name]
-
     if 'broadcast' in node.attrs:
         if node.attrs['broadcast'] == 1:
             input_node_number = len(input_name_list)
@@ -148,8 +143,21 @@ def _convert_Add(node, graph, err):
             graph.channel_dims[output_name] = graph.channel_dims[input_name_list[0]]
             return flat_layer, layer
 
-    layer = myf("Eltwise", node_name, input_name_list, [output_name], operation=P.Eltwise.SUM)
-    graph.channel_dims[output_name] = graph.channel_dims[input_name_list[0]]
+
+    # XXX: assume Bias comes in Eltwise first iput
+    if len(node.input_tensors) > 0:
+        assert len(input_name_list) == 2
+        data_index = list(input_name_list).index(list(node.input_tensors.keys())[0])
+        other_index = 1 - data_index
+        layer = myf("Bias",
+                         node_name,
+                         [input_name_list[other_index]],
+                         [input_name_list[data_index]])
+        graph.channel_dims[output_name] = graph.channel_dims[input_name_list[other_index]]
+    else:
+        layer = myf("Eltwise", node_name, input_name_list, [output_name], operation=P.Eltwise.SUM)
+        graph.channel_dims[output_name] = graph.channel_dims[input_name_list[1]]
+
     return layer
 
 
@@ -286,9 +294,9 @@ def _convert_gemm(node, graph, err):
     if len(node.inputs) > 2:
         b = node.input_tensors[node.inputs[2]]
 
-    if len(W.shape) != 2 or (b is not None and len(b.shape) != 1):
+    if len(W.shape) != 2 or (b is not None and b.size != 1):
         return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer")
-    if b is not None:
+    if b is not None and any(b!=0):
         bias_flag = True
         if W.shape[0] != b.shape[0]:
             return err.unsupported_op_configuration(node,
