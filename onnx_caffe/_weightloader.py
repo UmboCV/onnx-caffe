@@ -56,8 +56,12 @@ def _convert_BatchNorm(net, node, graph, err):
 
 
 def _convert_Add(net, node, graph, err):
-    pass
-
+    n_input = len(node.input_tensors)
+    if n_input == 1:
+        if node.inputs[0] in node.input_tensors:
+            net.params[node.name][0].data[...] = node.input_tensors[node.inputs[0]]
+        elif node.inputs[1] in node.input_tensors:
+            net.params[node.name][0].data[...] = node.input_tensors[node.inputs[1]]
 
 def _convert_Mul(net, node, graph, err):
     pass
@@ -92,13 +96,13 @@ def _convert_gemm(net, node, graph, err):
     b = None
     if len(node.inputs) > 2:
         b = node.input_tensors[node.inputs[2]]
-    if len(W.shape) != 2 or (b is not None and len(b.shape) != 1):
+    if len(W.shape) != 2 or any(b!=0):
         return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer")
-    if b is not None:
+    if b is not None and any(b!=0):
         if W.shape[0] != b.shape[0]:
             return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer")
     net.params[node_name][0].data[...] = W
-    net.params[node_name][1].data[...] = b
+    #net.params[node_name][1].data[...] = b
 
 
 def _convert_upsample(net, node, graph, err):
