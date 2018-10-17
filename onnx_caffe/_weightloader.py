@@ -91,18 +91,21 @@ def _convert_gemm(net, node, graph, err):
     else:
         err.missing_initializer(node,
                                 "Weight tensor: {} not found in the graph initializer".format(weight_name, ))
+    net.params[node_name][0].data[...] = W
+
     if node.attrs.get("broadcast", 1) != 1 or node.attrs["transB"] != 1:
         return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer")
     b = None
     if len(node.inputs) > 2:
         b = node.input_tensors[node.inputs[2]]
-    if len(W.shape) != 2 or any(b!=0):
+
+    if len(W.shape) != 2:
         return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer")
+
     if b is not None and any(b!=0):
         if W.shape[0] != b.shape[0]:
             return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer")
-    net.params[node_name][0].data[...] = W
-    #net.params[node_name][1].data[...] = b
+        net.params[node_name][1].data[...] = b
 
 
 def _convert_upsample(net, node, graph, err):

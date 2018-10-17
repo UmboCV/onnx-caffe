@@ -55,6 +55,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, shell=False)
         
         import shutil
+        shutil.rmtree(os.path.join(extdir, 'caffe'), ignore_errors=True)
         shutil.copytree(os.path.join(self.build_temp, 'python', 'caffe'), os.path.join(extdir, 'caffe'))
 
 
@@ -82,9 +83,9 @@ class TestCommand(test):
         import shlex
         # import here, cause outside the eggs aren't loaded
         import pytest
-        run_script('pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html')
+        run_script('pip install torch-nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html')
         run_script('pip install git+https://github.com/onnx/onnx.git')
-        run_script('pip install torchvision')
+        run_script('pip install torchvision-nightly')
         errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
 

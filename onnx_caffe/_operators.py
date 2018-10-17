@@ -294,8 +294,9 @@ def _convert_gemm(node, graph, err):
     if len(node.inputs) > 2:
         b = node.input_tensors[node.inputs[2]]
 
-    if len(W.shape) != 2 or (b is not None and any(b!=0)):
+    if len(W.shape) != 2:
         return err.unsupported_op_configuration(node, "Gemm is supported only for inner_product layer" + "b.shape=" + str(b.shape) + ' ss=' + str((b*b).sum()))
+
     if b is not None and any(b!=0):
         bias_flag = True
         if W.shape[0] != b.shape[0]:
