@@ -82,8 +82,7 @@ class TestCommand(test):
         import shlex
         # import here, cause outside the eggs aren't loaded
         import pytest
-        run_script('pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-')
+        run_script('pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html')
         run_script('pip install git+https://github.com/onnx/onnx.git')
         run_script('pip install torchvision')
         errno = pytest.main(shlex.split(self.pytest_args))
