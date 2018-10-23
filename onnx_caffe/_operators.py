@@ -116,9 +116,9 @@ def _convert_BatchNorm(node, graph, err):
     else:
         inplace = False
 
-    bn_layer = myf("BatchNorm", node_name + "_bn", [input_name], [output_name], eps=epsilon, use_global_stats=True,
-                   in_place=inplace)
-    scale_layer = myf("Scale", node_name, [output_name], [output_name], in_place=True, bias_term=True)
+    bn_layer = myf("BatchNorm", node_name + "_bn", [input_name], [input_name], eps=epsilon, use_global_stats=True,
+                   in_place=True)
+    scale_layer = myf("Scale", node_name, [input_name], [output_name], in_place=inplace, bias_term=True)
 
     graph.channel_dims[output_name] = graph.channel_dims[input_name]
 
