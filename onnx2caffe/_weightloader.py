@@ -127,6 +127,7 @@ def _convert_conv_transpose(net, node, graph, err):
 _ONNX_NODE_REGISTRY = {
     "Conv": _convert_conv,
     "Relu": _convert_relu,
+    "LeakyRelu": _convert_relu,
     "BatchNormalization": _convert_BatchNorm,
     "Add": _convert_Add,
     "Mul": _convert_Mul,

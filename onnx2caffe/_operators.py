@@ -69,7 +69,15 @@ def _convert_relu(node,graph,err):
     else:
         inplace = False
 
-    layer = myf("ReLU",name,[input_name],[output_name],in_place=inplace)
+    negative_slope = 0
+    if node.op_type == "LeakyRelu":
+        negative_slope = node.attrs['alpha']
+
+    layer = myf(
+        "ReLU",
+        name, [input_name], [output_name],
+        negative_slope=negative_slope,
+        in_place=inplace)
     # l_top_relu1 = L.ReLU(l_bottom, name=name, in_place=True)
 
     graph.channel_dims[output_name] = graph.channel_dims[input_name]
@@ -384,6 +392,7 @@ def _convert_conv_transpose(node,graph,err):
 _ONNX_NODE_REGISTRY = {
     "Conv": _convert_conv,
     "Relu": _convert_relu,
+    "LeakyRelu": _convert_relu,
     "BatchNormalization": _convert_BatchNorm,
     "Add": _convert_Add,
     "Mul": _convert_Mul,
