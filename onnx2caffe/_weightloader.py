@@ -141,6 +141,7 @@ _ONNX_NODE_REGISTRY = {
     "ConvTranspose": _convert_conv_transpose,
     "Sigmoid": _convert_sigmoid,
     "Flatten": _convert_Flatten,
+    "Sum": _convert_Add,
 }
 
 
