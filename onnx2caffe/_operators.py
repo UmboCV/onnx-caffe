@@ -282,7 +282,9 @@ def _convert_gemm(node,graph,err):
     return layer
 
 def _convert_upsample(node,graph,err):
-    factor = int(node.attrs["height_scale"])
+    upsample_scale = node.attrs["scales"]
+    assert upsample_scale[2]==upsample_scale[3], "The caffe Deconvolution only supports symmetric kernel size."
+    factor = int(upsample_scale[2])
     node_name = node.name
     input_name = str(node.inputs[0])
     output_name = str(node.outputs[0])
