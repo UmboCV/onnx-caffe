@@ -92,7 +92,7 @@ def _convert_gemm(net, node, graph, err):
 def _convert_upsample(net, node, graph, err):
     mode = node.attrs["mode"]
     node_name = node.name
-    if mode == "nearest":
+    if mode == b"nearest":
         caffe_params = net.params[node_name][0].data
         weights = np.ones(caffe_params.shape).astype("float32")
         np.copyto(net.params[node_name][0].data, weights, casting='same_kind')
