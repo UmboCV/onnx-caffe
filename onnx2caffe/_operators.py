@@ -288,36 +288,12 @@ def _convert_upsample(node,graph,err):
     node_name = node.name
     input_name = str(node.inputs[0])
     output_name = str(node.outputs[0])
-    # input_shape = graph.shape_dict[input_name]
-    # channels = input_shape[1]
-    channels = graph.channel_dims[input_name]
-    pad = int(math.ceil((factor - 1) / 2.))
-    # layer = myf("Deconvolution", node_name, [input_name], [output_name],
-    #             kernel_size=2 * factor - factor % 2,
-    #             stride=factor, group=channels,
-    #             pad = pad, num_output=channels, bias_term = False)
-    mode = node.attrs["mode"]
-    #https://github.com/pytorch/pytorch/issues/6900
-    if mode=="bilinear":
-        layer = myf("Deconvolution", node_name, [input_name], [output_name],
-                    convolution_param=dict(
-                        num_output=channels,
-                        kernel_size=2 * factor - factor % 2,
-                        stride=factor,
-                        pad=pad,
-                        group=channels,
-                        bias_term=False,
-                        weight_filler=dict(type="bilinear_upsampling")
-                    ))
-    else:
-        layer = myf("Deconvolution", node_name, [input_name], [output_name],
-                    convolution_param=dict(
-                        num_output=channels,
-                        kernel_size=factor,
-                        stride=factor,
-                        group=channels,
-                        bias_term=False,
-                    ))
+
+    #use custom caffe upsample op
+    layer = myf(
+        "Upsample",
+        node_name, [input_name], [output_name],
+        upsample_param=dict(size=factor, ))
 
     graph.channel_dims[output_name] = graph.channel_dims[input_name]
     return layer
